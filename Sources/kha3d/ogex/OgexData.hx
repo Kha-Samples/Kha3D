@@ -1,5 +1,7 @@
-package kha3d;
+package kha3d.ogex;
+
 import haxe.io.StringInput;
+
 using StringTools;
 
 // OpenGEX parser
