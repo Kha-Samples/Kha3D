@@ -99,14 +99,13 @@ class Lights {
 			vertices.set(index++, -scale); vertices.set(index++, -scale); vertices.set(index++, scale);
 			pointVertexBuffer.unlock();
 
-			pointVertexBuffer2 = new VertexBuffer(Forest.treeAxis * Forest.treeAxis, structure2, StaticUsage, 1);
+			pointVertexBuffer2 = new VertexBuffer(Scene.lights.length, structure2, StaticUsage, 1);
 			var b2 = pointVertexBuffer2.lock();
-			for (y in 0...Forest.treeAxis) {
-				for (x in 0...Forest.treeAxis) {
-					b2.set(y * 3 * Forest.treeAxis + x * 3 + 0, (x - Std.int(Forest.treeAxis / 2)) * (1000.0 / Forest.treeAxis) + 1.0);
-					b2.set(y * 3 * Forest.treeAxis + x * 3 + 1, 0.0 + 3.0);
-					b2.set(y * 3 * Forest.treeAxis + x * 3 + 2, (y - Std.int(Forest.treeAxis / 2)) * (1000.0 / Forest.treeAxis) - 3.0);
-				}
+			index = 0;
+			for (light in Scene.lights) {
+				b2.set(index++, light.x);
+				b2.set(index++, light.y);
+				b2.set(index++, light.z);
 			}
 			pointVertexBuffer2.unlock();
 
