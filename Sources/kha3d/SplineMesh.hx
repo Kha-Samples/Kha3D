@@ -1,5 +1,12 @@
 package kha3d;
 
+import kha.Image;
+import kha.math.FastMatrix4;
+import kha.graphics4.Graphics;
+import kha.Shaders;
+import kha.graphics4.PipelineState;
+import kha.graphics4.TextureUnit;
+import kha.graphics4.ConstantLocation;
 import kha.math.Vector2;
 import kha.math.Vector3;
 import kha.graphics4.IndexBuffer;
@@ -9,6 +16,12 @@ import kha.graphics4.VertexStructure;
 class SplineMesh {
 	final width = 1.0;
 	final extraHeight = 0.5;
+
+	var splineMv: ConstantLocation;
+	var splineMvp: ConstantLocation;
+	var splineTexUnit: TextureUnit;
+	var splineHeightsTexUnit: TextureUnit;
+	var splinePipeline: PipelineState;
 
 	static function createIndexBufferForQuads(count: Int): IndexBuffer {
 		var ib = new IndexBuffer(count * 3 * 2, StaticUsage);
@@ -43,8 +56,23 @@ class SplineMesh {
 		structure.add("pos", Float3);
 		structure.add("normal", Float3);
 		structure.add("texcoord", Float2);
+
+		splinePipeline = new PipelineState();
+		splinePipeline.vertexShader = Shaders.spline_vert;
+		splinePipeline.fragmentShader = Shaders.spline_frag;
+		splinePipeline.inputLayout = [structure];
+		splinePipeline.depthWrite = true;
+		splinePipeline.depthMode = Less;
+		splinePipeline.compile();
+
+		splineMv = splinePipeline.getConstantLocation("mv");
+		splineMvp = splinePipeline.getConstantLocation("mvp");
+		splineTexUnit = splinePipeline.getTextureUnit("image");
+		splineHeightsTexUnit = splinePipeline.getTextureUnit("heights");
+
 		vertices = new VertexBuffer(size * 4 * 2, structure, StaticUsage);
 		indices = createIndexBufferForQuads(size * 2 - 1);
+
 		var distance = 0.0;
 
 		var splineVertices = vertices.lock();
@@ -165,4 +193,16 @@ class SplineMesh {
 	public var vertices: VertexBuffer;
 	public var indices: IndexBuffer;
 	public var subdivision: Float;
+
+	public function render(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4, image: Image, heights: Image): Void {
+		g.setPipeline(splinePipeline);
+		g.setMatrix(splineMvp, mvp);
+		g.setMatrix(splineMv, mv);
+		g.setTexture(splineTexUnit, image);
+		g.setTexture(splineHeightsTexUnit, heights);
+		g.setTextureParameters(splineTexUnit, Repeat, Repeat, LinearFilter, LinearFilter, NoMipFilter);
+		g.setVertexBuffer(vertices);
+		g.setIndexBuffer(indices);
+		g.drawIndexedVertices();
+	}
 }
