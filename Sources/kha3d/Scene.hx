@@ -1,7 +1,7 @@
 package kha3d;
 
 import kha.math.Vector3;
-import kha.Framebuffer;
+import kha.Canvas;
 import kha.System;
 import kha.Image;
 import kha.math.FastMatrix4;
@@ -27,7 +27,6 @@ class Scene {
 	static var instancedVertexBuffer: VertexBuffer;
 	static var pipeline: PipelineState;
 	static var mvp: ConstantLocation;
-	static var mv: ConstantLocation;
 	static var texUnit: TextureUnit;
 
 	static var colors: Image;
@@ -53,7 +52,6 @@ class Scene {
 		pipeline.compile();
 		
 		mvp = pipeline.getConstantLocation("mvp");
-		mv = pipeline.getConstantLocation("mv");
 		texUnit = pipeline.getTextureUnit("image");
 
 		colors = depth = Image.createRenderTarget(System.windowWidth(), System.windowHeight(), RGBA32, Depth32Stencil8);
@@ -91,7 +89,6 @@ class Scene {
 
 		g.setPipeline(pipeline);
 		g.setMatrix(Scene.mvp, mvp);
-		g.setMatrix(Scene.mv, mv);
 		g.setTexture(texUnit, image);
 		setBuffers(g);
 		draw(g, instanceIndex);
@@ -121,7 +118,7 @@ class Scene {
 		g.end();
 	}
 
-	public static function render(frame: Framebuffer, position: Vector3, direction: Vector3) {
+	public static function render(frame: Canvas, position: Vector3, direction: Vector3) {
 		var model = FastMatrix4.identity(); // FastMatrix4.rotationY(Scheduler.time());
 		var view = FastMatrix4.lookAt(position.fast(), position.add(direction).fast(), new FastVector3(0, 1, 0));
 		var projection = FastMatrix4.perspectiveProjection(45, System.windowWidth(0) / System.windowHeight(0), 0.1, 550.0);

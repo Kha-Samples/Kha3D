@@ -5,7 +5,6 @@ in vec3 normal;
 in vec2 texcoord;
 
 uniform mat4 mvp;
-uniform mat4 mv;
 uniform sampler2D heights;
 
 out vec3 norm;

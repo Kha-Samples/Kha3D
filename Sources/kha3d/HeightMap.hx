@@ -19,7 +19,6 @@ class HeightMap {
 	var vertexBuffer: VertexBuffer;
 	var indexBuffer: IndexBuffer;
 	var mvp: ConstantLocation;
-	var mv: ConstantLocation;
 	var texUnit: TextureUnit;
 	var heights: TextureUnit;
 	public var heightsImage: Image;
@@ -46,7 +45,6 @@ class HeightMap {
 		pipeline.compile();
 
 		mvp = pipeline.getConstantLocation("mvp");
-		mv = pipeline.getConstantLocation("mv");
 		texUnit = pipeline.getTextureUnit("image");
 		this.heights = pipeline.getTextureUnit("heights");
 
@@ -105,7 +103,6 @@ class HeightMap {
 	public function render(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4) {
 		g.setPipeline(pipeline);
 		g.setMatrix(this.mvp, mvp);
-		g.setMatrix(this.mv, mv);
 		g.setTexture(texUnit, surfaceImage);
 		g.setTexture(heights, heightsImage);
 		g.setVertexBuffer(vertexBuffer);

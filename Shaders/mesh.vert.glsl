@@ -6,7 +6,6 @@ in vec3 normal;
 in vec2 texcoord;
 
 uniform mat4 mvp;
-uniform mat4 mv;
 
 out vec3 norm;
 out vec2 tex;

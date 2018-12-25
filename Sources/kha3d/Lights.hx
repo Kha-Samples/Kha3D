@@ -31,7 +31,6 @@ class Lights {
 	static var pointAlbedo: TextureUnit;
 	static var pointNormals: TextureUnit;
 	static var pointDepth: TextureUnit;
-	static var pointHeights: TextureUnit;
 	static var pointInverse: ConstantLocation;
 	static var pointMvp: ConstantLocation;
 
@@ -134,7 +133,6 @@ class Lights {
 			pointAlbedo = pointPipeline.getTextureUnit("albedo");
 			pointNormals = pointPipeline.getTextureUnit("normals");
 			pointDepth = pointPipeline.getTextureUnit("depth");
-			pointHeights = pointPipeline.getTextureUnit("heights");
 			pointInverse = pointPipeline.getConstantLocation("inv");
 			pointMvp = pointPipeline.getConstantLocation("mvp");
 		}
@@ -159,7 +157,6 @@ class Lights {
 		g.setTextureDepth(pointDepth, depthImage);
 		g.setMatrix(pointInverse, inverseMatrix);
 		g.setMatrix(pointMvp, mvp);
-		g.setTexture(pointHeights, kha.Assets.images.height);
 		g.setIndexBuffer(pointIndexBuffer);
 		g.setVertexBuffers([pointVertexBuffer, pointVertexBuffer2]);
 		g.drawIndexedVerticesInstanced(Scene.lights.length, 0, pointIndexBuffer.count());

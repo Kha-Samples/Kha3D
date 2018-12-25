@@ -17,7 +17,6 @@ class SplineMesh {
 	final width = 1.0;
 	final extraHeight = 0.5;
 
-	var splineMv: ConstantLocation;
 	var splineMvp: ConstantLocation;
 	var splineTexUnit: TextureUnit;
 	var splineHeightsTexUnit: TextureUnit;
@@ -78,7 +77,6 @@ class SplineMesh {
 		splinePipeline.depthMode = Less;
 		splinePipeline.compile();
 
-		splineMv = splinePipeline.getConstantLocation("mv");
 		splineMvp = splinePipeline.getConstantLocation("mvp");
 		splineTexUnit = splinePipeline.getTextureUnit("image");
 		splineHeightsTexUnit = splinePipeline.getTextureUnit("heights");
@@ -210,7 +208,6 @@ class SplineMesh {
 	public function render(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4, image: Image, heights: Image): Void {
 		g.setPipeline(splinePipeline);
 		g.setMatrix(splineMvp, mvp);
-		g.setMatrix(splineMv, mv);
 		g.setTexture(splineTexUnit, image);
 		g.setTexture(splineHeightsTexUnit, heights);
 		g.setTextureParameters(splineTexUnit, Repeat, Repeat, LinearFilter, LinearFilter, NoMipFilter);

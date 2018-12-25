@@ -3,7 +3,6 @@
 in vec3 pos;
 in vec2 texcoord;
 
-uniform mat4 mv;
 uniform mat4 mvp;
 uniform sampler2D heights;
 
