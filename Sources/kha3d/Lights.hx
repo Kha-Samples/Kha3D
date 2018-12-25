@@ -162,6 +162,6 @@ class Lights {
 		g.setTexture(pointHeights, kha.Assets.images.height);
 		g.setIndexBuffer(pointIndexBuffer);
 		g.setVertexBuffers([pointVertexBuffer, pointVertexBuffer2]);
-		g.drawIndexedVerticesInstanced(Forest.treeAxis * Forest.treeAxis, 0, pointIndexBuffer.count());
+		g.drawIndexedVerticesInstanced(Scene.lights.length, 0, pointIndexBuffer.count());
 	}
 }

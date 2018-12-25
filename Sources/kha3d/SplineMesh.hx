@@ -47,7 +47,9 @@ class SplineMesh {
 		return HeightMap.height(x, z);
 	}
 
-	public function new(spline: Array<Vector3>, subdivision: Float = 0.0005) {
+	public function new(spline: Array<Vector3>, subdivision: Float = 0.0005, splineFunc: Array<Vector3>->Float->Vector3 = null) {
+		Spline.prepareSpline(spline, splineFunc == null ? Spline.deBoorThirdDegree : splineFunc);
+
 		this.subdivision = subdivision;
 
 		var size = Std.int(1.0 / subdivision);
