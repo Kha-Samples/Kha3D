@@ -23,6 +23,9 @@ class SplineMesh {
 	var splineHeightsTexUnit: TextureUnit;
 	var splinePipeline: PipelineState;
 
+	public var texture: Image;
+	var heightMap: HeightMap;
+
 	static function createIndexBufferForQuads(count: Int): IndexBuffer {
 		var ib = new IndexBuffer(count * 3 * 2, StaticUsage);
 		var buffer = ib.lock();
@@ -43,11 +46,19 @@ class SplineMesh {
 		return ib;
 	}
 
-	static function getHeightAt(x: Float, z: Float): Float {
-		return HeightMap.height(x, z);
+	function getHeightAt(x: Float, z: Float): Float {
+		if (heightMap != null) {
+			return heightMap.height(x, z);
+		}
+		else {
+			return 0;
+		}
 	}
 
-	public function new(spline: Array<Vector3>, subdivision: Float = 0.0005, splineFunc: Array<Vector3>->Float->Vector3 = null) {
+	public function new(spline: Array<Vector3>, texture: Image, heightMap: HeightMap = null, subdivision: Float = 0.0005, splineFunc: Array<Vector3>->Float->Vector3 = null) {
+		this.texture = texture;
+		this.heightMap = heightMap;
+
 		Spline.prepareSpline(spline, splineFunc == null ? Spline.deBoorThirdDegree : splineFunc);
 
 		this.subdivision = subdivision;

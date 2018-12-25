@@ -1,5 +1,6 @@
 package kha3d;
 
+import kha.math.Vector3;
 import kha.Framebuffer;
 import kha.System;
 import kha.Image;
@@ -17,6 +18,7 @@ import kha.math.FastVector3;
 import kha.Shaders;
 
 class Scene {
+	public static var heightMap: HeightMap = null;
 	public static var meshes: Array<MeshObject> = [];
 	public static var splines: Array<SplineMesh> = [];
 	public static var lights: Array<FastVector3> = [];
@@ -34,6 +36,8 @@ class Scene {
 	static var image: Image;
 
 	public static function init() {
+		Lights.init();
+
 		instancedStructure = new VertexStructure();
 		instancedStructure.add("meshpos", VertexData.Float3);
 
@@ -55,6 +59,10 @@ class Scene {
 		colors = depth = Image.createRenderTarget(System.windowWidth(), System.windowHeight(), RGBA32, Depth32Stencil8);
 		normals = Image.createRenderTarget(System.windowWidth(), System.windowHeight(), RGBA32, NoDepthAndStencil);
 		image = Image.createRenderTarget(System.windowWidth(), System.windowHeight(), RGBA32, NoDepthAndStencil);
+
+		TextureViewer.init();
+
+		Shadows.init();
 	}
 
 	static function setBuffers(g: Graphics): Void {
@@ -66,7 +74,7 @@ class Scene {
 		g.drawIndexedVerticesInstanced(instanceCount, 0, meshes[0].mesh.indexBuffer.count());
 	}
 
-	public static function render(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4, vp: FastMatrix4, image: Image): Void {
+	public static function renderMeshes(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4, vp: FastMatrix4, image: Image): Void {
 		var planes = Culling.perspectiveToPlanes(vp);
 
 		var instanceIndex = 0;
@@ -93,11 +101,13 @@ class Scene {
 		var g = colors.g4;
 		g.begin([normals]);
 		g.clear(0xff00ffff, Math.POSITIVE_INFINITY);
-		HeightMap.render(g, mvp, mv);
+		if (heightMap != null) {
+			heightMap.render(g, mvp, mv);
+		}
 		for (spline in splines) {
 			spline.render(g, mvp, mv, splineImage, heightsImage);
 		}
-		Scene.render(g, mvp, mv, vp, meshImage);
+		renderMeshes(g, mvp, mv, vp, meshImage);
 		g.end();
 	}
 
@@ -111,7 +121,28 @@ class Scene {
 		g.end();
 	}
 
-	public static function renderView(frame: Framebuffer) {
+	public static function render(frame: Framebuffer, position: Vector3, direction: Vector3) {
+		var model = FastMatrix4.identity(); // FastMatrix4.rotationY(Scheduler.time());
+		var view = FastMatrix4.lookAt(position.fast(), position.add(direction).fast(), new FastVector3(0, 1, 0));
+		var projection = FastMatrix4.perspectiveProjection(45, System.windowWidth(0) / System.windowHeight(0), 0.1, 550.0);
+
+		var suneye = new FastVector3(position.x + 50.0, 150.0, position.z - 100.0);
+		var sunat = new FastVector3(position.x, 0, position.z);
+		var sunview = FastMatrix4.lookAt(suneye, sunat, new FastVector3(0, 0, 1));
+		var sunprojection = FastMatrix4.orthogonalProjection(-100, 100, -100, 100, 1.0, 300.0);
+
+		var mv = view.multmat(model);
+		var mvp = projection.multmat(view).multmat(model);
+		var inv = mvp.inverse();
+
+		var sunMvp = sunprojection.multmat(sunview).multmat(model);
+
+		Shadows.render(sunMvp);
+
+		Scene.renderGBuffer(mvp, mv, projection.multmat(view), meshes[0].texture, splines[0].texture, heightMap.heightsImage);
+		
+		Scene.renderImage(suneye, sunat, mvp, inv, sunMvp);
+
 		var g = frame.g4;
 		g.begin();
 		TextureViewer.render(g, colors, false, -1, -1, 1, 1);

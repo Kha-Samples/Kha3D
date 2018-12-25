@@ -1,6 +1,5 @@
 package kha3d;
 
-import kha.Assets;
 import kha.Image;
 import kha.Shaders;
 import kha.graphics4.CompareMode;
@@ -16,17 +15,24 @@ import kha.graphics4.TextureUnit;
 import kha.math.FastMatrix4;
 
 class HeightMap {
-	static var pipeline: PipelineState;
-	static var vertexBuffer: VertexBuffer;
-	static var indexBuffer: IndexBuffer;
-	static var mvp: ConstantLocation;
-	static var mv: ConstantLocation;
-	static var texUnit: TextureUnit;
-	static var heights: TextureUnit;
-	static final xdiv: Int = 100;
-	static final ydiv: Int = 100;
+	var pipeline: PipelineState;
+	var vertexBuffer: VertexBuffer;
+	var indexBuffer: IndexBuffer;
+	var mvp: ConstantLocation;
+	var mv: ConstantLocation;
+	var texUnit: TextureUnit;
+	var heights: TextureUnit;
+	public var heightsImage: Image;
+	public var surfaceImage: Image;
+	var xdiv: Int;
+	var ydiv: Int;
 
-	public static function init(): Void {
+	public function new(heights: Image, surface: Image, xdiv: Int = 100, ydiv: Int = 100): Void {
+		heightsImage = heights;
+		surfaceImage = surface;
+		this.xdiv = xdiv;
+		this.ydiv = ydiv;
+
 		var structure = new VertexStructure();
 		structure.add("pos", VertexData.Float3);
 		structure.add("texcoord", VertexData.Float2);
@@ -42,7 +48,7 @@ class HeightMap {
 		mvp = pipeline.getConstantLocation("mvp");
 		mv = pipeline.getConstantLocation("mv");
 		texUnit = pipeline.getTextureUnit("image");
-		heights = pipeline.getTextureUnit("heights");
+		this.heights = pipeline.getTextureUnit("heights");
 
 		vertexBuffer = new VertexBuffer(xdiv * ydiv, structure, Usage.StaticUsage);
 		var vertices = vertexBuffer.lock();
@@ -73,15 +79,15 @@ class HeightMap {
 		indexBuffer.unlock();
 	}
 
-	public static function height(x: Float, z: Float): Float {
+	public function height(x: Float, z: Float): Float {
 		// return texture(heights, vec2(x, z)).r * 50.0;
 		// max = xdiv / 2 * 10
 		x /= xdiv * 10;
 		x += 0.5;
-		x *= Assets.images.height.width;
+		x *= heightsImage.width;
 		z /= ydiv * 10;
 		z += 0.5;
-		z *= Assets.images.height.height;
+		z *= heightsImage.height;
 
 		/*var xleft = Math.floor(x);
 		var xright = Math.ceil(x);
@@ -93,15 +99,15 @@ class HeightMap {
 		var bottomleft = Assets.images.height.at(xleft, ztop).R;
 		var bottomright = Assets.images.height.at(xleft, ztop).R;*/
 
-		return Assets.images.height.at(Math.round(x), Math.round(z)).R * 50.0;
+		return heightsImage.at(Math.round(x), Math.round(z)).R * 50.0;
 	}
 
-	public static function render(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4) {
+	public function render(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4) {
 		g.setPipeline(pipeline);
-		g.setMatrix(HeightMap.mvp, mvp);
-		g.setMatrix(HeightMap.mv, mv);
-		g.setTexture(texUnit, Assets.images.grass);
-		g.setTexture(heights, Assets.images.height);
+		g.setMatrix(this.mvp, mvp);
+		g.setMatrix(this.mv, mv);
+		g.setTexture(texUnit, surfaceImage);
+		g.setTexture(heights, heightsImage);
 		g.setVertexBuffer(vertexBuffer);
 		g.setIndexBuffer(indexBuffer);
 		g.drawIndexedVertices();
