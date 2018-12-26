@@ -73,12 +73,22 @@ class Scene {
 	}
 
 	public static function renderMeshes(g: Graphics, mvp: FastMatrix4, mv: FastMatrix4, vp: FastMatrix4, image: Image): Void {
+		g.setPipeline(pipeline);
+		g.setMatrix(Scene.mvp, mvp);
+		g.setTexture(texUnit, image);
+
 		var planes = Culling.perspectiveToPlanes(vp);
 
 		var instanceIndex = 0;
 		var b2 = instancedVertexBuffer.lock();
+		var lastMesh: Mesh = null;
 		for (mesh in meshes) {
 			if (Culling.aabbInFrustum(planes, mesh.pos, mesh.pos)) {
+				if (lastMesh != null && mesh.mesh != lastMesh) {
+					setBuffers(g);
+					draw(g, instanceIndex);
+					instanceIndex = 0;
+				}
 				b2.set(instanceIndex * 3 + 0, mesh.pos.x);
 				b2.set(instanceIndex * 3 + 1, mesh.pos.y);
 				b2.set(instanceIndex * 3 + 2, mesh.pos.z);
@@ -87,11 +97,10 @@ class Scene {
 		}
 		instancedVertexBuffer.unlock();
 
-		g.setPipeline(pipeline);
-		g.setMatrix(Scene.mvp, mvp);
-		g.setTexture(texUnit, image);
-		setBuffers(g);
-		draw(g, instanceIndex);
+		if (instanceIndex > 0) {
+			setBuffers(g);
+			draw(g, instanceIndex);
+		}
 	}
 
 	public static function renderGBuffer(mvp: FastMatrix4, mv: FastMatrix4, vp: FastMatrix4, meshImage: Image, splineImage: Image, heightsImage: Image) {
@@ -119,6 +128,10 @@ class Scene {
 	}
 
 	public static function render(frame: Canvas, position: Vector3, direction: Vector3) {
+		meshes.sort(function (a, b) {
+			return a.mesh.id - b.mesh.id;
+		});
+
 		var model = FastMatrix4.identity(); // FastMatrix4.rotationY(Scheduler.time());
 		var view = FastMatrix4.lookAt(position.fast(), position.add(direction).fast(), new FastVector3(0, 1, 0));
 		var projection = FastMatrix4.perspectiveProjection(45, System.windowWidth(0) / System.windowHeight(0), 0.1, 550.0);

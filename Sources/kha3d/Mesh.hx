@@ -8,11 +8,14 @@ import kha.graphics4.VertexBuffer;
 import kha3d.ogex.OgexData;
 
 class Mesh {
+	static var currentId = 0;
+	public var id: Int;
 	public var structure: VertexStructure;
 	public var vertexBuffer: VertexBuffer;
 	public var indexBuffer: IndexBuffer;
 
 	public function new(data: OgexData) {
+		id = currentId++;
 		var vertices = data.geometryObjects[0].mesh.vertexArrays[0].values;
 		var normals = data.geometryObjects[0].mesh.vertexArrays[1].values;
 		var texcoords = data.geometryObjects[0].mesh.vertexArrays[2].values;
